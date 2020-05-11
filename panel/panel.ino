@@ -57,12 +57,12 @@ bool Knob::Update() {
         }
 
         if (IS_DEBUG) {
-            /*Serial.print("reading pin ");
+            Serial.print("reading pin ");
             Serial.print(pinClk);
             Serial.print(" last ");
             Serial.print(lastClk);
             Serial.print(" now ");
-            Serial.println(valClk);*/
+            Serial.println(valClk);
         }
 
         if (IS_DEBUG) {
