@@ -3,6 +3,7 @@
 #define UPDATE_STATE_LENGTH_US             2000000
 #define CHECK_INTERVAL_US_UPDATE_STATE         100
 #define CHECK_INTERVAL_US_NON_UPDATE_STATE    5000  // 5 miliseconds
+#define MIN_LOOPS_BETWEEN_UPDATES                5
 
 #define ALTIMETER                0
 #define PIN_ALTIMETER_CLK        23
@@ -19,6 +20,7 @@ class Knob {
         int pulseDegree;  // Number of degrees turned for one pulse
         int lastClk;
         int degree;
+        unsigned int loopsSinceLastUpdate = 0;
 };
 
 Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
@@ -27,8 +29,8 @@ Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
     this->pinDt = pinDt;
     this->pulseDegree = pulseDegree;
 
-    pinMode(this->pinClk, INPUT);
-    pinMode(this->pinDt, INPUT);
+    pinMode(this->pinClk, INPUT_PULLUP);
+    pinMode(this->pinDt, INPUT_PULLUP);
     this->lastClk = digitalRead(this->pinClk);
     this->degree = 0;
 
@@ -41,32 +43,50 @@ Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
 }
 
 bool Knob::Update() {
+    loopsSinceLastUpdate++;
     int valClk = digitalRead(pinClk);
     int valDt = digitalRead(pinDt);
     if (valClk != lastClk) {
+        lastClk = valClk;
+        if (loopsSinceLastUpdate < MIN_LOOPS_BETWEEN_UPDATES) {
+            // With CHECK_INTERVAL_US_NON_UPDATE_STATE = 5000 and CHECK_INTERVAL_US_UPDATE_STATE = 100,
+            // we check the encoder pins between 200 and 10k Hz. If two updates were observed too close
+            // to each other, there has likely been a bounce, or a loop may be delayed by serial
+            // operation or interrupts. In both cases, we want to ignore the update.
+            return false;
+        }
+
         if (IS_DEBUG) {
-            Serial.print("reading pin ");
+            /*Serial.print("reading pin ");
             Serial.print(pinClk);
             Serial.print(" last ");
             Serial.print(lastClk);
             Serial.print(" now ");
-            Serial.println(valClk);
+            Serial.println(valClk);*/
         }
 
-        Serial.print("Knob ");
-        Serial.print(knobName);
+        if (IS_DEBUG) {
+            Serial.print("Knob ");
+            Serial.print(knobName);
+        }
         if (valClk != valDt) {
             // clockwise
-            Serial.print(" turned clockwise to ");
+            if (IS_DEBUG) {
+                Serial.print(" turned clockwise to ");
+            }
             degree = (degree + pulseDegree) % 360;
         }
         else {
             // counter-clockwise
-            Serial.print(" turned counter-clockwise to ");
+            if (IS_DEBUG) {
+                Serial.print(" turned counter-clockwise to ");
+            }
             degree = (degree - pulseDegree + 360) % 360;
         }
-        Serial.println(degree);
-        lastClk = valClk;
+        if (IS_DEBUG) {
+            Serial.println(degree);
+        }
+        loopsSinceLastUpdate = 0;
         return true;
     }
     return false;
