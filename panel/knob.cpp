@@ -15,12 +15,12 @@ Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
     this->lastClk = digitalRead(this->pinClk);
     this->degree = 0;
 
-    Serial.print("Initialized knob ");
-    Serial.print(this->knobName);
-    Serial.print(" CLK=");
-    Serial.print(this->pinClk);
-    Serial.print(" DT=");
-    Serial.println(this->pinDt);
+    CONSOLE_PRINT("Initialized knob ");
+    CONSOLE_PRINT(this->knobName);
+    CONSOLE_PRINT(" CLK=");
+    CONSOLE_PRINT(this->pinClk);
+    CONSOLE_PRINT(" DT=");
+    CONSOLE_PRINTLN(this->pinDt);
 }
 
 bool Knob::Update() {
