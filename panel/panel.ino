@@ -1,4 +1,5 @@
 #include "knob.h"
+#include "spad.h"
 
 #define UPDATE_STATE_LENGTH_US             2000000
 #define CHECK_INTERVAL_US_UPDATE_STATE         100
@@ -38,6 +39,8 @@ void setup() {
     knobs[VOR2] = new Knob("VOR2", PIN_VOR2_CLK, PIN_VOR2_DT, 12);
     knobs[ALTIMETER] = new Knob("ALTIMETER", PIN_ALTIMETER_CLK, PIN_ALTIMETER_DT, 12);
     knobs[VOR1] = new Knob("VOR1", PIN_VOR1_CLK, PIN_VOR1_DT, 12);
+
+    SPAD::Init("Cessna 172 Instrument Panel");
 }
 
 // the loop function runs over and over again forever
@@ -61,6 +64,8 @@ void loop() {
             loopIntervalUs = CHECK_INTERVAL_US_NON_UPDATE_STATE;
         }
     }
+
+    SPAD::HandleSerialData();
 
     delayMicroseconds(loopIntervalUs);
 }
