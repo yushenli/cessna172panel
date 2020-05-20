@@ -1,3 +1,5 @@
+#include "debug.h"
+#include "instrument.h"
 #include "knob.h"
 #include "spad.h"
 
@@ -21,9 +23,67 @@
 #define PIN_VOR1_CLK              2
 #define PIN_VOR1_DT               3
 
+// You can configure what instruments the aircraft shall have by editting
+// this const array to change.
+const Instrument** (*kCessna172InstrumentGroups[])(int*) = {
+    CreateSixPackInstruments,
+    CreateNavigationInstruments
+};
+
 Knob* knobs[5];
+Instrument** instruments;
 int loopIntervalUs;
 int updateStateEndsInChecks;
+
+void knobToInstrumentCallback(Instrument* p, const char* instrumentName, int knobIndex) {
+    if (!strcmp(p->GetName(), instrumentName)) {
+        knobs[knobIndex]->RegisterUpdateCallback(
+            [p](KnobUpdateEvent event, int degree) {
+                if (event == Clockwise) {
+                    p->IntValueIncrease();
+                } else if (event == CounterClockwise) {
+                    p->IntValueDecrease();
+                }
+            });
+    }
+}
+
+// Creates all the Knobs supported by the hardware.
+void initKnobs() {
+    knobs[HDG_ADJUST] = new Knob("HDG_ADJUST", PIN_HDG_ADJUST_CLK, PIN_HDG_ADJUST_DT, 12);
+    knobs[HDG_BUG] = new Knob("HDG_BUG", PIN_HDG_BUG_CLK, PIN_HDG_BUG_DT, 12);
+    knobs[VOR2] = new Knob("VOR2", PIN_VOR2_CLK, PIN_VOR2_DT, 12);
+    knobs[ALTIMETER] = new Knob("ALTIMETER", PIN_ALTIMETER_CLK, PIN_ALTIMETER_DT, 12);
+    knobs[VOR1] = new Knob("VOR1", PIN_VOR1_CLK, PIN_VOR1_DT, 12);
+}
+
+// Creates all the Instruments supported in the simulation aircraft.
+void initInstruments() {
+    const int numInstrumentGroups = sizeof(kCessna172InstrumentGroups) / sizeof(*kCessna172InstrumentGroups);
+    int* groupSizes = new int[numInstrumentGroups];
+    Instrument*** instrumentGroups = new Instrument**[numInstrumentGroups];
+
+    int totalGroupSize = 0;
+    for (int i = 0; i < numInstrumentGroups; i++) {
+        instrumentGroups[i] = kCessna172InstrumentGroups[i](groupSizes + i);
+        totalGroupSize += groupSizes[i];
+    }
+
+    instruments = new Instrument*[totalGroupSize];
+    Instrument** p = instruments;
+
+    for (int i = 0; i < numInstrumentGroups; i++) {
+        for (int j = 0; j < groupSizes[i]; j++) {
+            *p = (instrumentGroups[i])[j];
+            knobToInstrumentCallback(*p, "HeadingAdjust", HDG_ADJUST);
+            knobToInstrumentCallback(*p, "HeadingBug", HDG_BUG);
+            knobToInstrumentCallback(*p, "Altimeter", ALTIMETER);
+            knobToInstrumentCallback(*p, "VOR1", VOR1);
+            knobToInstrumentCallback(*p, "VOR2", VOR2);
+            p++;
+        }
+    }
+}
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -34,11 +94,8 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
 
-    knobs[HDG_ADJUST] = new Knob("HDG_ADJUST", PIN_HDG_ADJUST_CLK, PIN_HDG_ADJUST_DT, 12);
-    knobs[HDG_BUG] = new Knob("HDG_BUG", PIN_HDG_BUG_CLK, PIN_HDG_BUG_DT, 12);
-    knobs[VOR2] = new Knob("VOR2", PIN_VOR2_CLK, PIN_VOR2_DT, 12);
-    knobs[ALTIMETER] = new Knob("ALTIMETER", PIN_ALTIMETER_CLK, PIN_ALTIMETER_DT, 12);
-    knobs[VOR1] = new Knob("VOR1", PIN_VOR1_CLK, PIN_VOR1_DT, 12);
+    initKnobs();
+    initInstruments();
 
     SPAD::Init("Cessna 172 Instrument Panel");
 }

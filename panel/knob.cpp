@@ -2,7 +2,7 @@
 
 #include "debug.h"
 
-#define MIN_LOOPS_BETWEEN_UPDATES                5
+#define MIN_LOOPS_BETWEEN_UPDATES 5
 
 Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
     this->knobName = knobName;
@@ -51,21 +51,39 @@ bool Knob::Update() {
             return false;
         }
 
+        KnobUpdateEvent event;
         DEBUG_PRINT("Knob ");
         DEBUG_PRINT(knobName);
         if (valClk != valDt) {
             // clockwise
+            event = Clockwise;
             DEBUG_PRINT(" turned clockwise to ");
             degree = (degree + pulseDegree) % 360;
-        }
-        else {
+        } else {
             // counter-clockwise
+            event = CounterClockwise;
             DEBUG_PRINT(" turned counter-clockwise to ");
             degree = (degree - pulseDegree + 360) % 360;
         }
-        DEBUG_PRINTLN(degree);
+        DEBUG_PRINTLN(degree);        
+        for (int i = 0; i < updateCallbackCount; i++) {
+            updateCallbacks[i](event, degree);
+        }
         loopsSinceLastUpdate = 0;
         return true;
     }
     return false;
+}
+
+void Knob::RegisterUpdateCallback(KnobUpdateCallback callback) {
+    if (updateCallbackCount >= MAX_UPDATE_CALLBACK_COUNT) {
+        CONSOLE_PRINT("Knob ");
+        CONSOLE_PRINT(knobName);
+        CONSOLE_PRINT(" already has ");
+        CONSOLE_PRINT(updateCallbackCount);
+        CONSOLE_PRINTLN(" update callbacks. Cannot register more.");
+        return;
+    }
+    updateCallbacks[updateCallbackCount] = callback;
+    updateCallbackCount++;
 }
