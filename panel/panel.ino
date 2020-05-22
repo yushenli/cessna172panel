@@ -1,5 +1,7 @@
 #include "debug.h"
 #include "instrument.h"
+#include "instrument_adapter.h"
+#include "instrument_adapter_spad.h"
 #include "knob.h"
 #include "spad.h"
 
@@ -32,19 +34,33 @@ const Instrument** (*kCessna172InstrumentGroups[])(int*) = {
 
 Knob* knobs[5];
 Instrument** instruments;
+int instrumentsCount;
+InstrumentAdapter* instrumentAdapter;
 int loopIntervalUs;
 int updateStateEndsInChecks;
 
-void knobToInstrumentCallback(Instrument* p, const char* instrumentName, int knobIndex) {
+void knobToInstrumentCallback(Instrument* p, const char* instrumentName, int knobIndex, bool isClockwiseDec = false) {
     if (!strcmp(p->GetName(), instrumentName)) {
-        knobs[knobIndex]->RegisterUpdateCallback(
-            [p](KnobUpdateEvent event, int degree) {
-                if (event == Clockwise) {
-                    p->IntValueIncrease();
-                } else if (event == CounterClockwise) {
-                    p->IntValueDecrease();
-                }
-            });
+        if (isClockwiseDec) {
+            knobs[knobIndex]->RegisterUpdateCallback(
+                [p](KnobUpdateEvent event, int degree) {
+                    if (event == Clockwise) {
+                        p->IntValueDecrease();
+                    } else if (event == CounterClockwise) {
+                        p->IntValueIncrease();
+                    }
+                });
+        }
+        else {
+            knobs[knobIndex]->RegisterUpdateCallback(
+                [p](KnobUpdateEvent event, int degree) {
+                    if (event == Clockwise) {
+                        p->IntValueIncrease();
+                    } else if (event == CounterClockwise) {
+                        p->IntValueDecrease();
+                    }
+                });
+        }
     }
 }
 
@@ -63,13 +79,13 @@ void initInstruments() {
     int* groupSizes = new int[numInstrumentGroups];
     Instrument*** instrumentGroups = new Instrument**[numInstrumentGroups];
 
-    int totalGroupSize = 0;
+    instrumentsCount = 0;
     for (int i = 0; i < numInstrumentGroups; i++) {
         instrumentGroups[i] = kCessna172InstrumentGroups[i](groupSizes + i);
-        totalGroupSize += groupSizes[i];
+        instrumentsCount += groupSizes[i];
     }
 
-    instruments = new Instrument*[totalGroupSize];
+    instruments = new Instrument*[instrumentsCount];
     Instrument** p = instruments;
 
     for (int i = 0; i < numInstrumentGroups; i++) {
@@ -78,8 +94,8 @@ void initInstruments() {
             knobToInstrumentCallback(*p, "HeadingAdjust", HDG_ADJUST);
             knobToInstrumentCallback(*p, "HeadingBug", HDG_BUG);
             knobToInstrumentCallback(*p, "Altimeter", ALTIMETER);
-            knobToInstrumentCallback(*p, "VOR1", VOR1);
-            knobToInstrumentCallback(*p, "VOR2", VOR2);
+            knobToInstrumentCallback(*p, "VOR1", VOR1, true);
+            knobToInstrumentCallback(*p, "VOR2", VOR2, true);
             p++;
         }
     }
@@ -96,6 +112,9 @@ void setup() {
 
     initKnobs();
     initInstruments();
+
+    instrumentAdapter = new InstrumentAdapterSPAD();
+    instrumentAdapter->RegisterInstruments(instruments, instrumentsCount);
 
     SPAD::Init("Cessna 172 Instrument Panel");
 }

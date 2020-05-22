@@ -76,7 +76,7 @@ bool Knob::Update() {
 }
 
 void Knob::RegisterUpdateCallback(KnobUpdateCallback callback) {
-    if (updateCallbackCount >= MAX_UPDATE_CALLBACK_COUNT) {
+    if (updateCallbackCount >= MAX_KNOB_UPDATE_CALLBACK_COUNT) {
         CONSOLE_PRINT("Knob ");
         CONSOLE_PRINT(knobName);
         CONSOLE_PRINT(" already has ");

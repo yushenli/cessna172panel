@@ -19,6 +19,7 @@ const byte CMDID_SIMULATION = 4;  // Send Event to Simulation
 
 void Init(const char* deviceName);
 void HandleSerialData();
+void SendSimulationEvent(const char* event);
 
 void cbUnknownCommand();
 void cbRequestFromSPAD();

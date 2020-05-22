@@ -41,11 +41,19 @@ void HandleSerialData() {
     _m->feedinSerialData();
 }
 
+void SendSimulationEvent(const char* event) {
+    if (!_m) {
+        return;
+    }
+    _m->sendCmd(CMDID_SIMULATION, event);
+}
+
 void cbUnknownCommand() {
     log("Unknown command received");
 }
 
 void handleInitRequest() {
+#ifdef SIMULATOR_SERIAL
     // For some reason, the CMDID of the first ever command sent by CmdMessenger always gets seen
     // by spad.neXt as an empty char. So sending CMDID_FROM_SPAD directly to serial here.
     SIMULATOR_SERIAL.print("0");
@@ -55,6 +63,7 @@ void handleInitRequest() {
     _m->sendCmdArg("{11111111-2222-3333-4444-000000000000}");
     _m->sendCmdArg(_deviceName);
     _m->sendCmdEnd();
+#endif
 }
 
 void handlePingRequest() {

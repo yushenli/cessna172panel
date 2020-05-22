@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "lib/functional-avr/nonstd.h"
 
-#define MAX_UPDATE_CALLBACK_COUNT 5
+#define MAX_KNOB_UPDATE_CALLBACK_COUNT 1
 
 enum KnobUpdateEvent {
     KnobUpdateEventUnknown,
@@ -33,7 +33,7 @@ class Knob {
         unsigned int loopsSinceLastUpdate = 0;
 
         int updateCallbackCount = 0;
-        KnobUpdateCallback updateCallbacks[MAX_UPDATE_CALLBACK_COUNT];
+        KnobUpdateCallback updateCallbacks[MAX_KNOB_UPDATE_CALLBACK_COUNT];
 };
 
 #endif  // _KNOB_H
