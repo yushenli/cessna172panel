@@ -2,8 +2,8 @@
 #include "instrument.h"
 #include "instrument_adapter.h"
 #include "instrument_adapter_spad.h"
-#include "knob.h"
 #include "spad.h"
+#include "src/hardware/knob.h"
 
 #define UPDATE_STATE_LENGTH_US             2000000
 #define CHECK_INTERVAL_US_UPDATE_STATE         100
