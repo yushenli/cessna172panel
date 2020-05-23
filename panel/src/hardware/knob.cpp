@@ -2,7 +2,7 @@
 
 #include "../../debug.h"
 
-#define MIN_LOOPS_BETWEEN_UPDATES 5
+const int kMinLoopsBetweenUpdates = 5;
 
 Knob::Knob(const char* knobName, int pinClk, int pinDt, int pulseDegree) {
     this->knobName = knobName;
@@ -38,8 +38,8 @@ bool Knob::Update() {
         DEBUG_PRINTLN(valClk);
 
         lastClk = valClk;
-        if (loopsSinceLastUpdate < MIN_LOOPS_BETWEEN_UPDATES) {
-            // With CHECK_INTERVAL_US_NON_UPDATE_STATE = 5000 and CHECK_INTERVAL_US_UPDATE_STATE = 100,
+        if (loopsSinceLastUpdate < kMinLoopsBetweenUpdates) {
+            // With kCheckIntervalUsNonUpdateState = 5000 and kCheckIntervalUsUpdateState = 100,
             // we check the encoder pins between 200 and 10k Hz. If two updates were observed too close
             // to each other, there has likely been a bounce, or a loop may be delayed by serial
             // operation or interrupts. In both cases, we want to ignore the update.
@@ -76,7 +76,7 @@ bool Knob::Update() {
 }
 
 void Knob::RegisterUpdateCallback(KnobUpdateCallback callback) {
-    if (updateCallbackCount >= MAX_KNOB_UPDATE_CALLBACK_COUNT) {
+    if (updateCallbackCount >= kMaxKnobUpdateCallbackCount) {
         CONSOLE_PRINT("Knob ");
         CONSOLE_PRINT(knobName);
         CONSOLE_PRINT(" already has ");
