@@ -20,7 +20,7 @@ void Instrument::IntValueIncrease() {
 }
 
 void Instrument::RegisterIntValueIncrease(InstrumentIntValueIncreaseCallback callback) {    
-    if (intValueIncreaseCallbackCount_ >= MAX_INSTRUMENT_CALLBACK_COUNT) {
+    if (intValueIncreaseCallbackCount_ >= kMaxInstrumentCallCount) {
         CONSOLE_PRINT("Instrument ");
         CONSOLE_PRINT(name_);
         CONSOLE_PRINT(" already has ");
@@ -43,7 +43,7 @@ void Instrument::IntValueDecrease() {
 }
 
 void Instrument::RegisterIntValueDecrease(InstrumentIntValueDecreaseCallback callback) {    
-    if (intValueDecreaseCallbackCount_ >= MAX_INSTRUMENT_CALLBACK_COUNT) {
+    if (intValueDecreaseCallbackCount_ >= kMaxInstrumentCallCount) {
         CONSOLE_PRINT("Instrument ");
         CONSOLE_PRINT(name_);
         CONSOLE_PRINT(" already has ");

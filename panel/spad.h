@@ -10,12 +10,13 @@
 
 namespace SPAD {
 
-const byte CMDID_FROM_SPAD  = 0;  // Request from SPAD.neXt
-const byte CMDID_TO_SPAD    = 1;  // Command to SPAD.neXt
-const byte CMDID_EVENTS     = 2;  // Events from SPAD.neXt
-const byte CMDID_DEBUG      = 3;  // Debug strings to SPAD.neXt Logfile
-const byte CMDID_SIMULATION = 4;  // Send Event to Simulation
-
+enum cmdid {
+    kCmdidFromSPAD   = 0,  // Request from SPAD.neXt
+    kCmdidToSPAD     = 1,  // Command to SPAD.neXt
+    kCmdidEvents     = 2,  // Events from SPAD.neXt
+    kCmdidDebug      = 3,  // Debug strings to SPAD.neXt Logfile
+    kCmdidSimulation = 4   // Send Event to Simulation
+};
 
 void Init(const char* deviceName);
 void HandleSerialData();

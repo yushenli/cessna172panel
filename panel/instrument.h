@@ -8,7 +8,7 @@
 #include <Arduino.h>
 #include "lib/functional-avr/nonstd.h"
 
-#define MAX_INSTRUMENT_CALLBACK_COUNT 2
+const int kMaxInstrumentCallCount = 2;
 
 typedef nonstd::function<void()> InstrumentIntValueIncreaseCallback;
 typedef nonstd::function<void()> InstrumentIntValueDecreaseCallback;
@@ -31,9 +31,9 @@ class Instrument {
         int value_int_ = 0;
 
         int intValueIncreaseCallbackCount_ = 0;
-        InstrumentIntValueIncreaseCallback intValueIncreaseCallbacks_[MAX_INSTRUMENT_CALLBACK_COUNT];
+        InstrumentIntValueIncreaseCallback intValueIncreaseCallbacks_[kMaxInstrumentCallCount];
         int intValueDecreaseCallbackCount_ = 0;
-        InstrumentIntValueDecreaseCallback intValueDecreaseCallbacks_[MAX_INSTRUMENT_CALLBACK_COUNT];
+        InstrumentIntValueDecreaseCallback intValueDecreaseCallbacks_[kMaxInstrumentCallCount];
 };
 
 Instrument** CreateSixPackInstruments(int* size);
