@@ -1,6 +1,9 @@
-# include "instrument_adapter_spad.h"
-# include "debug.h"
-# include "spad.h"
+#include "instrument_adapter_spad.h"
+#include "debug.h"
+
+InstrumentAdapterSPAD::InstrumentAdapterSPAD(SPAD* spad) {
+    spad_ = spad;
+}
 
 void InstrumentAdapterSPAD::registerInstrument(Instrument* instrument) {
     if (!strcmp(instrument->GetName(), "Altimeter")) {
@@ -33,60 +36,60 @@ void InstrumentAdapterSPAD::registerInstrument(Instrument* instrument) {
 
 void InstrumentAdapterSPAD::OnAltimeterIntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnAltimeterValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:KOHLSMAN_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:KOHLSMAN_INC");
 }
 
 void InstrumentAdapterSPAD::OnAltimeterIntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnAltimeterValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:KOHLSMAN_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:KOHLSMAN_DEC");
 }
 
 void InstrumentAdapterSPAD::OnHeadingAdjustIntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnHeadingAdjustIntValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:GYRO_DRIFT_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:GYRO_DRIFT_INC");
 }
 
 void InstrumentAdapterSPAD::OnHeadingAdjustIntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnHeadingAdjustIntValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:GYRO_DRIFT_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:GYRO_DRIFT_DEC");
 }
 
 void InstrumentAdapterSPAD::OnHeadingBugIntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnHeadingBugIntValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:HEADING_BUG_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:HEADING_BUG_INC");
 }
 
 void InstrumentAdapterSPAD::OnHeadingBugIntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnHeadingBugIntValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:HEADING_BUG_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:HEADING_BUG_DEC");
 }
 
 void InstrumentAdapterSPAD::OnVOR1IntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnVOR1IntValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:VOR1_OBI_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:VOR1_OBI_INC");
 }
 
 void InstrumentAdapterSPAD::OnVOR1IntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnVOR1IntValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:VOR1_OBI_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:VOR1_OBI_DEC");
 }
 
 void InstrumentAdapterSPAD::OnVOR2IntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnVOR2IntValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:VOR2_OBI_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:VOR2_OBI_INC");
 }
 
 void InstrumentAdapterSPAD::OnVOR2IntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnVOR2IntValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:VOR2_OBI_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:VOR2_OBI_DEC");
 }
 
 void InstrumentAdapterSPAD::OnADF1IntValueIncrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnADF1IntValueIncrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:ADF_CARD_INC");
+    spad_->SendSimulationEvent("SIMCONNECT:ADF_CARD_INC");
 }
 
 void InstrumentAdapterSPAD::OnADF1IntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnADF1IntValueDecrease triggered");
-    SPAD::SendSimulationEvent("SIMCONNECT:ADF_CARD_DEC");
+    spad_->SendSimulationEvent("SIMCONNECT:ADF_CARD_DEC");
 }

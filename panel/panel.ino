@@ -39,8 +39,9 @@ const Instrument** (*kCessna172InstrumentGroups[])(int*) = {
 
 Knob** knobs;
 Instrument** instruments;
+SPAD* spad = nullptr;
 int instrumentsCount;
-InstrumentAdapter* instrumentAdapter;
+InstrumentAdapter* instrumentAdapter = nullptr;
 int loopIntervalUs;
 int updateStateEndsInChecks;
 
@@ -110,7 +111,9 @@ void initInstruments() {
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-    Serial.begin(115200);
+#ifdef CONSOLE_SERIAL
+    CONSOLE_SERIAL.begin(115200);
+#endif
 
     loopIntervalUs = 5000;
     updateStateEndsInChecks = 0;
@@ -120,10 +123,20 @@ void setup() {
     initKnobs();
     initInstruments();
 
-    instrumentAdapter = new InstrumentAdapterSPAD();
-    instrumentAdapter->RegisterInstruments(instruments, instrumentsCount);
+#if defined SIMULATOR_ON_SERIAL0
+    Serial.begin(115200);
+    spad = SPAD::GetInstance("Cessna 172 Instrument Panel", Serial);
+#elif defined SIMULATOR_ON_SERIAL1
+    Serial1.begin(115200);
+    spad = SPAD::GetInstance("Cessna 172 Instrument Panel", Serial1);
+#else
+    CONSOLE_PRINTLN("Warning: no serial port used to talk to simulator");
+#endif
 
-    SPAD::Init("Cessna 172 Instrument Panel");
+    if (spad) {
+        instrumentAdapter = new InstrumentAdapterSPAD(spad);
+        instrumentAdapter->RegisterInstruments(instruments, instrumentsCount);
+    }
 }
 
 // the loop function runs over and over again forever
@@ -148,7 +161,9 @@ void loop() {
         }
     }
 
-    SPAD::HandleSerialData();
+    if (spad) {
+        spad->HandleSerialData();
+    }
 
     delayMicroseconds(loopIntervalUs);
 }

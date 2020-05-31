@@ -8,9 +8,11 @@
 
 #include "instrument.h"
 #include "instrument_adapter.h"
+#include "spad.h"
 
 class InstrumentAdapterSPAD : public InstrumentAdapter {
     public:
+        InstrumentAdapterSPAD(SPAD* spad);
         void OnAltimeterIntValueIncrease();
         void OnAltimeterIntValueDecrease();
         void OnHeadingAdjustIntValueIncrease();
@@ -25,6 +27,8 @@ class InstrumentAdapterSPAD : public InstrumentAdapter {
         void OnADF1IntValueDecrease();
     protected:
         virtual void registerInstrument(Instrument* instrument);
+
+        SPAD* spad_;
 };
 
 #endif  // _INSTRUMENT_ADAPTER_SPAD_H

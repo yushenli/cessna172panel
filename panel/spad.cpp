@@ -2,108 +2,99 @@
 
 #include "debug.h"
 
-#if defined SIMULATOR_ON_SERIAL0
-#define SIMULATOR_SERIAL Serial
-#elif defined SIMULATOR_ON_SERIAL1
-#define SIMULATOR_SERIAL Serial1
-#endif
+static SPAD* singleton_spad_ = nullptr;
 
-namespace SPAD {
+static SPAD* SPAD::GetInstance() {
+    return singleton_spad_;
+}
 
-CmdMessenger* _m;
-const char* _deviceName;
-bool initialConfigRequestReceived = false;
+static SPAD* SPAD::GetInstance(const char* deviceName, Stream& stream) {
+    if (!singleton_spad_) {
+        singleton_spad_ = new SPAD(deviceName, stream);
+    }
+    else {
+        if (strcmp(deviceName, singleton_spad_->deviceName_)
+            || &stream != singleton_spad_->stream_) {
+            CONSOLE_PRINTLN(
+                "FATAL: SPAD is singleton but SPAD::GetInstance() was called with different parameters.");
+        }
+    }
+    return singleton_spad_;
+}
 
-void Init(const char* deviceName) {
-#ifdef SIMULATOR_SERIAL
-    _m = new CmdMessenger(SIMULATOR_SERIAL);
-    _m->attach(cbUnknownCommand);
-    _m->attach(kCmdidFromSPAD, cbRequestFromSPAD);
-#else
-    _m = NULL;
-#endif
+SPAD::SPAD(const char* deviceName, Stream& stream) {
+    stream_ = &stream;
+    messenger_ = new CmdMessenger(stream);
+    messenger_->attach(cbUnknownCommand);
+    messenger_->attach(kCmdidFromSPAD, cbRequestFromSPAD);
 
-    _deviceName = deviceName;
+    deviceName_ = deviceName;
 
     CONSOLE_PRINT("CmdMessenger initialized, device name: ");
-    CONSOLE_PRINT(deviceName);
-#ifdef SIMULATOR_SERIAL
+    CONSOLE_PRINT(deviceName_);
     CONSOLE_PRINTLN(".");
-#else
-    CONSOLE_PRINTLN(". Warning: no serial port used to talk to simulator");
-#endif
 }
 
-void HandleSerialData() {
-    if (!_m) {
-        return;
-    }
-    _m->feedinSerialData();
+void SPAD::HandleSerialData() {
+    messenger_->feedinSerialData();
 }
 
-void SendSimulationEvent(const char* event) {
-    if (!_m) {
-        return;
-    }
-    _m->sendCmd(kCmdidSimulation, event);
+void SPAD::SendSimulationEvent(const char* event) {
+    messenger_->sendCmd(kCmdidSimulation, event);
 }
 
-void cbUnknownCommand() {
-    log("Unknown command received");
+static void SPAD::cbUnknownCommand() {
+    GetInstance()->log("Unknown command received");
 }
 
-void handleInitRequest() {
-#ifdef SIMULATOR_SERIAL
+void SPAD::handleInitRequest() {
     // For some reason, the CMDID of the first ever command sent by CmdMessenger always gets seen
     // by spad.neXt as an empty char. So sending kCmdidFromSPAD directly to serial here.
-    SIMULATOR_SERIAL.print("0");
-    _m->sendCmdStart(kCmdidFromSPAD);
-    _m->sendCmdArg("SPAD");
+    stream_->print("0");
+    messenger_->sendCmdStart(kCmdidFromSPAD);
+    messenger_->sendCmdArg("SPAD");
     // TODO: create another library that generate unique GUID and persist in EEPROM
-    _m->sendCmdArg("{11111111-2222-3333-4444-000000000000}");
-    _m->sendCmdArg(_deviceName);
-    _m->sendCmdEnd();
-#endif
+    messenger_->sendCmdArg("{11111111-2222-3333-4444-000000000000}");
+    messenger_->sendCmdArg(deviceName_);
+    messenger_->sendCmdEnd();
 }
 
-void handlePingRequest() {
-    _m->sendCmdStart(kCmdidFromSPAD);
-    _m->sendCmdArg("PONG");
-    _m->sendCmdArg(_m->readInt32Arg());
-    _m->sendCmdEnd();
+void SPAD::handlePingRequest() {
+    messenger_->sendCmdStart(kCmdidFromSPAD);
+    messenger_->sendCmdArg("PONG");
+    messenger_->sendCmdArg(messenger_->readInt32Arg());
+    messenger_->sendCmdEnd();
 }
 
-void handleConfigRequest() {
-    _m->sendCmdStart(kCmdidToSPAD);
-    _m->sendCmdArg("ADD");
-    _m->sendCmdArg(10);
-    _m->sendCmdArg("leds/systemled"); // will become "SERIAL:<guid>/leds/systemled"
-    _m->sendCmdArg("U8");
-    _m->sendCmdArg("RW");
-    _m->sendCmdArg("SYSTEM_LED");
-    _m->sendCmdArg("Toggle LED on/off");
-    _m->sendCmdEnd();
+void SPAD::handleConfigRequest() {
+    messenger_->sendCmdStart(kCmdidToSPAD);
+    messenger_->sendCmdArg("ADD");
+    messenger_->sendCmdArg(10);
+    messenger_->sendCmdArg("leds/systemled"); // will become "SERIAL:<guid>/leds/systemled"
+    messenger_->sendCmdArg("U8");
+    messenger_->sendCmdArg("RW");
+    messenger_->sendCmdArg("SYSTEM_LED");
+    messenger_->sendCmdArg("Toggle LED on/off");
+    messenger_->sendCmdEnd();
 
-    _m->sendCmd(kCmdidFromSPAD, "CONFIG");
-    initialConfigRequestReceived = true;
+    messenger_->sendCmd(kCmdidFromSPAD, "CONFIG");
+    initialConfigRequestReceived_ = true;
 }
 
-void cbRequestFromSPAD() {
-    const char *requestName = _m->readStringArg();
+static void SPAD::cbRequestFromSPAD() {    
+    const char *requestName = GetInstance()->messenger_->readStringArg();
 
     if (strcmp(requestName, "INIT") == 0) {
-        handleInitRequest();
+         GetInstance()->handleInitRequest();
     }
     else if (strcmp(requestName, "PING") == 0) {
-        handlePingRequest();
+         GetInstance()->handlePingRequest();
     }
     else if (strcmp(requestName, "CONFIG") == 0) {
-        handleConfigRequest();
+         GetInstance()->handleConfigRequest();
     }
 }
 
-void log(const char* str) {
-    _m->sendCmd(kCmdidDebug, str);
+void SPAD::log(const char* str) {
+    messenger_->sendCmd(kCmdidDebug, str);
 }
-
-}  // namespace SPAD
