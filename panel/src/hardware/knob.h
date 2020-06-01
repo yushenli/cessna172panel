@@ -23,17 +23,17 @@ class Knob {
         bool Update();
         
         void RegisterUpdateCallback(KnobUpdateCallback callback);
-    private:
-        const char* knobName;
-        int pinClk;
-        int pinDt;
-        int pulseDegree;  // Number of degrees turned for one pulse
-        int lastClk;
-        int degree;
-        unsigned int loopsSinceLastUpdate = 0;
+    protected:
+        const char* knobName_;
+        int pinClk_;
+        int pinDt_;
+        int pulseDegree_;  // Number of degrees turned for one pulse
+        int lastClk_;
+        int degree_;
+        unsigned int loopsSinceLastUpdate_ = 0;
 
-        int updateCallbackCount = 0;
-        KnobUpdateCallback updateCallbacks[kMaxKnobUpdateCallbackCount];
+        int updateCallbackCount_ = 0;
+        KnobUpdateCallback updateCallbacks_[kMaxKnobUpdateCallbackCount];
 };
 
 #endif  // _KNOB_H
