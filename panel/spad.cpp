@@ -8,12 +8,13 @@ static SPAD* SPAD::GetInstance() {
     return singleton_spad_;
 }
 
-static SPAD* SPAD::GetInstance(const char* deviceName, Stream& stream) {
+static SPAD* SPAD::GetInstance(const char* deviceGUID, const char* deviceName, Stream& stream) {
     if (!singleton_spad_) {
-        singleton_spad_ = new SPAD(deviceName, stream);
+        singleton_spad_ = new SPAD(deviceGUID, deviceName, stream);
     }
     else {
-        if (strcmp(deviceName, singleton_spad_->deviceName_)
+        if (strcmp(deviceGUID, singleton_spad_->deviceGUID_)
+            || strcmp(deviceName, singleton_spad_->deviceName_)
             || &stream != singleton_spad_->stream_) {
             CONSOLE_PRINTLN(
                 "FATAL: SPAD is singleton but SPAD::GetInstance() was called with different parameters.");
@@ -22,16 +23,19 @@ static SPAD* SPAD::GetInstance(const char* deviceName, Stream& stream) {
     return singleton_spad_;
 }
 
-SPAD::SPAD(const char* deviceName, Stream& stream) {
+SPAD::SPAD(const char* deviceGUID, const char* deviceName, Stream& stream) {
     stream_ = &stream;
     messenger_ = new CmdMessenger(stream);
     messenger_->attach(cbUnknownCommand);
     messenger_->attach(kCmdidFromSPAD, cbRequestFromSPAD);
 
+    deviceGUID_ = deviceGUID;
     deviceName_ = deviceName;
 
     CONSOLE_PRINT("CmdMessenger initialized, device name: ");
     CONSOLE_PRINT(deviceName_);
+    CONSOLE_PRINT(", GUID: ");
+    CONSOLE_PRINT(deviceGUID_);
     CONSOLE_PRINTLN(".");
 }
 
@@ -53,8 +57,7 @@ void SPAD::handleInitRequest() {
     stream_->print("0");
     messenger_->sendCmdStart(kCmdidFromSPAD);
     messenger_->sendCmdArg("SPAD");
-    // TODO: create another library that generate unique GUID and persist in EEPROM
-    messenger_->sendCmdArg("{11111111-2222-3333-4444-000000000000}");
+    messenger_->sendCmdArg(deviceGUID_);
     messenger_->sendCmdArg(deviceName_);
     messenger_->sendCmdEnd();
 }

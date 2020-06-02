@@ -19,7 +19,7 @@ class SPAD {
         // GetInstance() with or without the parameters. But if you call it with parameters but
         // they're different from the initial call, a fatal error will be thrown.
         static SPAD* GetInstance();
-        static SPAD* GetInstance(const char* deviceName, Stream& stream);
+        static SPAD* GetInstance(const char* deviceGUID, const char* deviceName, Stream& stream);
         void HandleSerialData();
         void SendSimulationEvent(const char* event);
 
@@ -32,7 +32,7 @@ class SPAD {
             kCmdidSimulation = 4   // Send Event to Simulation
         };
 
-        SPAD(const char* deviceName, Stream& stream);
+        SPAD(const char* deviceGUID, const char* deviceName, Stream& stream);
         static void cbUnknownCommand();
         static void cbRequestFromSPAD();
         void handleInitRequest();
@@ -43,6 +43,7 @@ class SPAD {
 
         Stream* stream_;
         CmdMessenger* messenger_;
+        const char* deviceGUID_;
         const char* deviceName_;
         bool initialConfigRequestReceived_ = false;
 };

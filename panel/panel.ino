@@ -3,6 +3,7 @@
 #include "instrument_adapter.h"
 #include "instrument_adapter_spad.h"
 #include "spad.h"
+#include "src/device/guid.h"
 #include "src/hardware/knob.h"
 
 const uint32_t kUpdateStateLengthUs           = 2000000;
@@ -44,6 +45,7 @@ int instrumentsCount;
 InstrumentAdapter* instrumentAdapter = nullptr;
 int loopIntervalUs;
 int updateStateEndsInChecks;
+char spadGUID[GUID::kGUIDLen + 1];
 
 void knobToInstrumentCallback(Instrument* p, const char* instrumentName, Knob* knob, bool isClockwiseDec = false) {
     if (!strcmp(p->GetName(), instrumentName)) {
@@ -125,10 +127,12 @@ void setup() {
 
 #if defined SIMULATOR_ON_SERIAL0
     Serial.begin(115200);
-    spad = SPAD::GetInstance("Cessna 172 Instrument Panel", Serial);
+    GUID::GetGUID(spadGUID, 0);
+    spad = SPAD::GetInstance(spadGUID, "Cessna 172 Instrument Panel", Serial);
 #elif defined SIMULATOR_ON_SERIAL1
     Serial1.begin(115200);
-    spad = SPAD::GetInstance("Cessna 172 Instrument Panel", Serial1);
+    GUID::GetGUID(spadGUID, 1);
+    spad = SPAD::GetInstance(spadGUID, "Cessna 172 Instrument Panel", Serial1);
 #else
     CONSOLE_PRINTLN("Warning: no serial port used to talk to simulator");
 #endif
