@@ -5,6 +5,7 @@
 #include "spad.h"
 #include "src/device/guid.h"
 #include "src/hardware/knob.h"
+#include "src/hardware/guitar_pickup.h"
 
 const uint32_t kUpdateStateLengthUs           = 2000000;
 const uint32_t kCheckIntervalUsUpdateState    =     100;
@@ -31,6 +32,9 @@ const struct {
     {"VOR1", 2, 3}
 };
 
+const char* kFlapGuitarPickupName = "FlapSelector";
+const int kFlapGuitarPickupPins[3] = {23, 25, 27};
+
 // You can configure what instruments the aircraft shall have by editting
 // this const array to change.
 const Instrument** (*kCessna172InstrumentGroups[])(int*) = {
@@ -39,6 +43,7 @@ const Instrument** (*kCessna172InstrumentGroups[])(int*) = {
 };
 
 Knob** knobs;
+GuitarPickup* guitarPickup;
 Instrument** instruments;
 SPAD* spad = nullptr;
 int instrumentsCount;
@@ -83,6 +88,11 @@ void initKnobs() {
     }
 }
 
+// Creates all guitar pickup supported by the hardware.
+void initGuitarPickup() {
+    guitarPickup = new GuitarPickup(kFlapGuitarPickupName, kFlapGuitarPickupPins);
+}
+
 // Creates all the Instruments supported in the simulation aircraft.
 void initInstruments() {
     const int numInstrumentGroups = sizeof(kCessna172InstrumentGroups) / sizeof(*kCessna172InstrumentGroups);
@@ -123,6 +133,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, LOW);
 
     initKnobs();
+    initGuitarPickup();
     initInstruments();
 
 #if defined SIMULATOR_ON_SERIAL0
@@ -149,6 +160,7 @@ void loop() {
     for (int i = 0; i < sizeof(kKnobsSpecs) / sizeof(kKnobsSpecs[0]); i++) {
         updated |= knobs[i]->Update();
     }
+    updated |= guitarPickup->Update();
 
     if (updated) {
         if (updateStateEndsInChecks <= 0) {
