@@ -12,6 +12,7 @@ const int kMaxInstrumentCallCount = 2;
 
 typedef nonstd::function<void()> InstrumentIntValueIncreaseCallback;
 typedef nonstd::function<void()> InstrumentIntValueDecreaseCallback;
+typedef nonstd::function<void(int)> InstrumentIntValueSetCallback;
 
 class Instrument {
     public:
@@ -22,6 +23,8 @@ class Instrument {
         void RegisterIntValueIncrease(InstrumentIntValueIncreaseCallback callback);
         void IntValueDecrease();
         void RegisterIntValueDecrease(InstrumentIntValueDecreaseCallback callback);
+        void IntValueSet(int value);
+        void RegisterIntValueSet(InstrumentIntValueSetCallback callback);
     protected:
         const char* name_;
         // isSynced_ indicates if an adapter is actively syning the internal value with the simulator.
@@ -34,6 +37,8 @@ class Instrument {
         InstrumentIntValueIncreaseCallback intValueIncreaseCallbacks_[kMaxInstrumentCallCount];
         int intValueDecreaseCallbackCount_ = 0;
         InstrumentIntValueDecreaseCallback intValueDecreaseCallbacks_[kMaxInstrumentCallCount];
+        int intValueSetCallbackCount_ = 0;
+        InstrumentIntValueSetCallback intValueSetCallbacks_[kMaxInstrumentCallCount];
 };
 
 Instrument** CreateSixPackInstruments(int* size);

@@ -77,6 +77,15 @@ void knobToInstrumentCallback(Instrument* p, const char* instrumentName, Knob* k
     }
 }
 
+void guitarPickupToInstrumentCallback(Instrument* p, const char* instrumentName, GuitarPickup* guitarPickup) {
+    if (!strcmp(p->GetName(), instrumentName)) {
+        guitarPickup->RegisterUpdateCallback(
+            [p](int value) {
+                p->IntValueSet(value);
+            });
+    }
+}
+
 // Creates all the Knobs supported by the hardware.
 void initKnobs() {
     const int count = sizeof(kKnobsSpecs) / sizeof(kKnobsSpecs[0]);
@@ -105,8 +114,16 @@ void initInstruments() {
         instrumentsCount += groupSizes[i];
     }
 
+    // Increase instrumentsCount for scalar instruments defined below:
+    // 0. Flap
+    instrumentsCount++;
+
     instruments = new Instrument*[instrumentsCount];
     Instrument** p = instruments;
+
+    *p = new Instrument("Flap");
+    guitarPickupToInstrumentCallback(*p, "Flap", guitarPickup);
+    p++;
 
     for (int i = 0; i < numInstrumentGroups; i++) {
         for (int j = 0; j < groupSizes[i]; j++) {

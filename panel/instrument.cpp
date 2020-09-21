@@ -55,6 +55,31 @@ void Instrument::RegisterIntValueDecrease(InstrumentIntValueDecreaseCallback cal
     intValueDecreaseCallbackCount_++;
 }
 
+void Instrument::IntValueSet(int value) {
+    DEBUG_PRINT("Instrument ");
+    DEBUG_PRINT(name_);
+    DEBUG_PRINT(" int value set with value: ");
+    DEBUG_PRINTLN(value);
+
+    value_int_ = value;
+    for (int i = 0; i < intValueSetCallbackCount_; i++) {
+        intValueSetCallbacks_[i](value);
+    }
+}
+
+void Instrument::RegisterIntValueSet(InstrumentIntValueSetCallback callback) {    
+    if (intValueSetCallbackCount_ >= kMaxInstrumentCallCount) {
+        CONSOLE_PRINT("Instrument ");
+        CONSOLE_PRINT(name_);
+        CONSOLE_PRINT(" already has ");
+        CONSOLE_PRINT(intValueDecreaseCallbackCount_);
+        CONSOLE_PRINTLN(" IntValueDecrease callbacks. Cannot register more.");
+        return;
+    }
+    intValueSetCallbacks_[intValueSetCallbackCount_] = callback;
+    intValueSetCallbackCount_++;
+}
+
 // The following section provides some predefined instruments.
 // Instruments are provided by groups, different aircrafts may choose the combination
 // of different groups.

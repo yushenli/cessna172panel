@@ -25,6 +25,7 @@ class InstrumentAdapterSPAD : public InstrumentAdapter {
         void OnVOR2IntValueDecrease();
         void OnADF1IntValueIncrease();
         void OnADF1IntValueDecrease();
+        void OnFlapIntValueSet(int value);
     protected:
         virtual void registerInstrument(Instrument* instrument);
 

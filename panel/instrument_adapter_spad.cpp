@@ -30,6 +30,9 @@ void InstrumentAdapterSPAD::registerInstrument(Instrument* instrument) {
         instrument->RegisterIntValueIncrease([this]() { OnADF1IntValueIncrease(); });
         instrument->RegisterIntValueDecrease([this]() { OnADF1IntValueDecrease(); });
     }
+    if (!strcmp(instrument->GetName(), "Flap")) {
+        instrument->RegisterIntValueSet([this](int value) { OnFlapIntValueSet(value); });
+    }
     // It's totally normal if this InstrumentAdapter doesn't recognize the instrument's name.
     // An adapter doesn't have to support all intruments.
 }
@@ -92,4 +95,22 @@ void InstrumentAdapterSPAD::OnADF1IntValueIncrease() {
 void InstrumentAdapterSPAD::OnADF1IntValueDecrease() {
     DEBUG_PRINTLN("InstrumentAdapterSPAD::OnADF1IntValueDecrease triggered");
     spad_->SendSimulationEvent("SIMCONNECT:ADF_CARD_DEC");
+}
+
+void InstrumentAdapterSPAD::OnFlapIntValueSet(int value) {
+    DEBUG_PRINT("InstrumentAdapterSPAD::OnFlapIntValueSet triggered with value ");
+    DEBUG_PRINTLN(value);
+    switch (value) {
+        case 0:
+            spad_->SendSimulationEvent("SIMCONNECT:FLAPS_UP");
+            break;
+        case 1:
+            spad_->SendSimulationEvent("SIMCONNECT:FLAPS_1");
+            break;
+        case 2:
+            spad_->SendSimulationEvent("SIMCONNECT:FLAPS_2");
+            break;
+        default:
+            spad_->SendSimulationEvent("SIMCONNECT:FLAPS_DOWN");
+    }
 }
